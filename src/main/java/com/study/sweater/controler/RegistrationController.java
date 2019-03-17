@@ -3,7 +3,6 @@ package com.study.sweater.controler;
 import com.study.sweater.domain.Role;
 import com.study.sweater.domain.User;
 import com.study.sweater.repos.UserRepo;
-import org.hibernate.mapping.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +18,9 @@ public class RegistrationController {
     private UserRepo userRepo;
 
     @GetMapping("/registration")
-    public String registration(){
+    public String registration(Map<String ,Object> model){
+
+        model.put("message"," ");
         return "registration";
     }
 

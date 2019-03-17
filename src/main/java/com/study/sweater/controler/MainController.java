@@ -31,7 +31,7 @@ public class MainController {
 
     }
 
-    @PostMapping("addMessage")
+    @PostMapping("/addMessage")
     public String add(
             @AuthenticationPrincipal User user,
             @RequestParam String text,
@@ -44,7 +44,7 @@ public class MainController {
         return "main";
     }
 
-    @PostMapping("filter")
+    @PostMapping("/filter")
     public String filter(@RequestParam String filter,Map<String,Object> model){
 
         Iterable<Message> messages;
