@@ -20,6 +20,9 @@ public class User implements UserDetails {
     private String password;
     private boolean active;
 
+    private String email;
+    private String activationCode;
+
     @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     //Создает таблицу для хранения ролей
     @CollectionTable(name = "usr_role",joinColumns  = @JoinColumn(name = "user_id"))
