@@ -8,17 +8,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -62,20 +62,24 @@ public class MainController {
             model.addAttribute("message",message);
 
         } else {
-            if (file != null && !file.getOriginalFilename().isEmpty()) {
-                File uploadDir = new File(uploadPath);
-                if (!uploadDir.exists()) uploadDir.mkdirs();
-                String uuidFile = UUID.randomUUID().toString();
-                String resultFilename = uuidFile + "." + file.getOriginalFilename();
-                file.transferTo(new File(uploadPath + "/" + resultFilename));
-                message.setFilename(resultFilename);
-            }
+            saveFile(message, file);
             model.addAttribute("message",null);
             messageRepo.save(message);
         }
         Iterable<Message> messages = messageRepo.findAll();
         model.addAttribute("messages",messages);
         return "main";
+    }
+
+    private void saveFile(@Valid Message message, @RequestParam("file") MultipartFile file) throws IOException {
+        if (file != null && !file.getOriginalFilename().isEmpty()) {
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) uploadDir.mkdirs();
+            String uuidFile = UUID.randomUUID().toString();
+            String resultFilename = uuidFile + "." + file.getOriginalFilename();
+            file.transferTo(new File(uploadPath + "/" + resultFilename));
+            message.setFilename(resultFilename);
+        }
     }
 
     @PostMapping("/filter")
@@ -87,6 +91,53 @@ public class MainController {
 
         model.put("messages",messages);
         return "main";
+    }
+
+    @GetMapping("/user-messages/{user}")
+    public String userMessages(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable User user,
+            Model model,
+            @RequestParam int message
+            //@RequestParam(required = false) Message message
+    ){
+        Set<Message> messages = user.getMessages();
+
+       // Message message1 = messageRepo.
+
+        model.addAttribute("messages",messages);
+        Message message1 = messageRepo.findById(Long.valueOf(message));
+        model.addAttribute("message",message1);
+        model.addAttribute("isCurrentUser",currentUser.equals(user));
+
+        return "userMessages";
+    }
+
+    @PostMapping("/user-messages/{user}")
+    public String updateMessage(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long user,
+            @RequestParam int message,
+            @RequestParam("text") String text,
+            @RequestParam("tag") String tag,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        Message message1 = messageRepo.findById(Long.valueOf(message));
+        if (message1.getAuthor().equals(currentUser)) {
+            if (!StringUtils.isEmpty(text)) {
+                message1.setText(text);
+            }
+
+            if (!StringUtils.isEmpty(tag)) {
+                message1.setTag(tag);
+            }
+
+            saveFile(message1, file);
+
+            messageRepo.save(message1);
+        }
+
+        return "redirect:/user-messages/" + user+"?message=0";
     }
 
 
