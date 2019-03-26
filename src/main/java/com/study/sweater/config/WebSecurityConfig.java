@@ -23,11 +23,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    /*public WebSecurityConfig(UserService userService,PasswordEncoder passwordEncoder){
-        this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
-    }*/
-
     @Bean
     public PasswordEncoder getPasswordEncoder(){
         return new BCryptPasswordEncoder(8);

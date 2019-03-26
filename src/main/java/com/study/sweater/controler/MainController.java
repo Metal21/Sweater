@@ -98,16 +98,18 @@ public class MainController {
             @AuthenticationPrincipal User currentUser,
             @PathVariable User user,
             Model model,
-            @RequestParam int message
+            @PathVariable("user") int message
             //@RequestParam(required = false) Message message
     ){
         Set<Message> messages = user.getMessages();
 
-       // Message message1 = messageRepo.
+        model.addAttribute("userChannel",user);
+        model.addAttribute("subscriptionsCount",user.getSubscriptions().size());
+        model.addAttribute("subscribersCount",user.getSubscribers().size());
+        model.addAttribute("isSubscriber",user.getSubscribers().contains(currentUser));
 
         model.addAttribute("messages",messages);
-        Message message1 = messageRepo.findById(Long.valueOf(message));
-        model.addAttribute("message",message1);
+        model.addAttribute("message",messageRepo.findById(Long.valueOf(message)));
         model.addAttribute("isCurrentUser",currentUser.equals(user));
 
         return "userMessages";
